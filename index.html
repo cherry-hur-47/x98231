@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A1 Xplore TV kanali</title>
+    <style>
+        :root {
+            --primary-red: #E2001A;
+            --primary-red-hover: #b80014;
+            --bg-color: #0A0A0A;
+            --card-bg: #161616;
+            --card-border: #262626;
+            --text-main: #FFFFFF;
+            --text-muted: #A0A0A0;
+            --input-bg: #222222;
+            --input-border: #333333;
+            --category-btn-bg: #1A1A1A;
+            --category-btn-text: #FFFFFF;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --header-height: 72px;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --card-border: #E5E5E5;
+            --text-main: #1A1A1A;
+            --text-muted: #666666;
+            --input-bg: #FFFFFF;
+            --input-border: #D1D1D6;
+            --category-btn-bg: #E5E5EA;
+            --category-btn-text: #1A1A1A;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 2px solid var(--primary-red);
+            height: var(--header-height);
+            min-height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            z-index: 100;
+            box-shadow: 0 4px 10px var(--shadow-color);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1240px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 1024px) {
+            header {
+                padding: 0;
+            }
+            .header-container,
+            .controls-container,
+            .channels-grid {
+                max-width: 1240px;
+                padding-left: 1rem;
+                padding-right: 1rem;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .logo span.brand {
+            color: var(--primary-red);
+        }
+
+        .logo span.sub {
+            font-weight: 400;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-left: 0.3rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .theme-button,
+        .settings-button {
+            background: none;
+            border: 2px solid var(--card-border);
+            color: var(--text-muted);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            padding: 0;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .theme-button:hover,
+        .settings-button:hover {
+            border-color: var(--primary-red);
+            color: var(--text-main);
+        }
+
+        .theme-button svg,
+        .settings-button svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+            display: block;
+            pointer-events: none;
+        }
+
+        .theme-button .sun-icon {
+            display: none;
+        }
+
+        [data-theme="light"] .theme-button .moon-icon {
+            display: none;
+        }
+
+        [data-theme="light"] .theme-button .sun-icon {
+            display: block;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            width: 90%;
+            max-width: 420px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            transform: scale(0.9);
+            transition: transform 0.2s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .modal-header h2 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .modal-btn {
+            flex: 1;
+            background-color: var(--category-btn-bg);
+            color: var(--category-btn-text);
+            border: 2px solid var(--card-border);
+            padding: 0.75rem;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            min-height: 44px;
+            font-size: 0.9rem;
+        }
+
+        .modal-btn:hover {
+            border-color: var(--primary-red);
+            color: var(--text-main);
+        }
+
+        .backup-textarea {
+            width: 100%;
+            height: 110px;
+            background-color: var(--input-bg);
+            border: 2px solid var(--input-border);
+            color: var(--text-main);
+            border-radius: 10px;
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            resize: none;
+            outline: none;
+        }
+
+        .backup-textarea:focus {
+            border-color: var(--primary-red);
+        }
+
+        .modal-feedback {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+            min-height: 20px;
+            margin-top: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .modal-feedback.success {
+            color: #24b273;
+        }
+
+        .modal-feedback.error {
+            color: var(--primary-red);
+        }
+
+        .modal-feedback.info {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scrollable-content {
+            height: 100%;
+            overflow-y: auto;
+            scrollbar-width: none;
+            padding-bottom: 4rem;
+        }
+
+        .scrollable-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-track {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .scrollbar-thumb {
+            width: 6px;
+            right: 1px;
+            background-color: var(--primary-red);
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.3s ease, width 0.15s ease;
+            position: absolute;
+            top: 0;
+        }
+
+        .scrollbar-thumb.visible {
+            opacity: 0.65;
+        }
+
+        @media (min-width: 1024px) {
+            .scrollbar-track {
+                pointer-events: auto;
+                width: 24px;
+                cursor: pointer;
+            }
+            .scrollbar-track:hover .scrollbar-thumb,
+            .scrollbar-thumb.dragging {
+                width: 14px;
+                right: 0;
+                border-radius: 7px;
+                opacity: 0.85 !important;
+            }
+        }
+
+        .controls-container {
+            max-width: 1240px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 2px solid var(--input-border);
+            color: var(--text-main);
+            padding: 1rem 1.25rem;
+            border-radius: 14px;
+            font-size: 1.15rem;
+            outline: none;
+            min-height: 54px;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-red);
+        }
+
+        .categories-scroll {
+            display: flex;
+            gap: 0.6rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+        }
+
+        .categories-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-btn {
+            background-color: var(--category-btn-bg);
+            color: var(--category-btn-text);
+            border: none;
+            padding: 0.7rem 1.4rem;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            cursor: pointer;
+            min-height: 46px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .category-btn.active {
+            background-color: var(--primary-red);
+            color: #FFFFFF;
+        }
+
+        .quick-filters {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .filter-toggle-btn {
+            cursor: pointer;
+            user-select: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 0 1rem;
+            border: 1.5px solid var(--card-border);
+            border-radius: 8px;
+            background: none;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .filter-toggle-btn input[type="checkbox"] {
+            display: none;
+        }
+
+        .filter-toggle-btn:hover {
+            border-color: var(--text-muted);
+            color: var(--text-main);
+        }
+
+        .filter-toggle-btn:has(input[type="checkbox"]:checked) {
+            border-color: var(--primary-red);
+            color: var(--primary-red);
+            background-color: rgba(226, 0, 26, 0.05);
+        }
+
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        @media (min-width: 600px) {
+            .channels-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 1.25rem;
+            }
+        }
+
+        .channel-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 1.15rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 120px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            position: relative;
+        }
+
+        .channel-number {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--primary-red);
+            margin-bottom: 0.35rem;
+            letter-spacing: -0.5px;
+        }
+
+        .channel-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.3;
+            word-break: break-word;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .badges {
+            display: flex;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+        }
+
+        .badge-hd {
+            background-color: var(--primary-red);
+            color: #FFFFFF;
+            font-size: 0.7rem;
+            font-weight: 900;
+            padding: 0.15rem 0.4rem;
+            border-radius: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-type {
+            background-color: var(--input-border);
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 0.15rem 0.4rem;
+            border-radius: 5px;
+            text-transform: uppercase;
+        }
+
+        .fav-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.35rem;
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            min-height: 40px;
+        }
+
+        .fav-btn.active {
+            color: #FFCC00;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 1rem;
+            color: var(--text-muted);
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        .back-to-top {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background-color: var(--primary-red);
+            color: #FFFFFF;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 998;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .back-to-top:hover {
+            background-color: var(--primary-red-hover);
+            transform: translateY(-2px);
+        }
+
+        .back-to-top svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="logo">A1 <span class="brand">Xplore TV</span><span class="sub">kanali</span></div>
+            <div class="header-actions">
+                <button class="settings-button" id="settingsBtn" aria-label="Rezervna kopija">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                    </svg>
+                </button>
+                <button class="theme-button" id="themeBtn" aria-label="Promena teme">
+                    <svg class="moon-icon" viewBox="0 0 24 24">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <svg class="sun-icon" viewBox="0 0 24 24">
+                        <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41zm-12.37 12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <div class="scrollable-content" id="scrollContainer">
+            <div class="controls-container">
+                <div class="search-wrapper">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Pretraži kanale po nazivu ili broju...">
+                </div>
+
+                <div class="categories-scroll" id="categoriesContainer"></div>
+
+                <div class="quick-filters">
+                    <label class="filter-toggle-btn">
+                        <input type="checkbox" id="favFilter">
+                        <span>Samo omiljeni ★</span>
+                    </label>
+                    <label class="filter-toggle-btn">
+                        <input type="checkbox" id="hdFilter">
+                        <span>Samo HD kanali</span>
+                    </label>
+                </div>
+            </div>
+
+            <main class="channels-grid" id="channelsGrid"></main>
+        </div>
+
+        <div id="customScrollbarTrack" class="scrollbar-track">
+            <div id="customScrollbarThumb" class="scrollbar-thumb"></div>
+        </div>
+
+        <button class="back-to-top" id="backToTopBtn" aria-label="Back to Top">
+            <svg viewBox="0 0 24 24">
+                <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        const channelsData = [
+            { id: 1, name: "RTS 1", hd: true, cat: "Nacionalni" },
+            { id: 2, name: "RTS 2", hd: true, cat: "Nacionalni" },
+            { id: 3, name: "RTV 1", hd: true, cat: "Nacionalni" },
+            { id: 4, name: "RTV 2", hd: true, cat: "Nacionalni" },
+            { id: 5, name: "Prva", hd: true, cat: "Nacionalni" },
+            { id: 6, name: "B92", hd: true, cat: "Nacionalni" },
+            { id: 7, name: "Pink", hd: true, cat: "Nacionalni" },
+            { id: 8, name: "Happy", hd: true, cat: "Nacionalni" },
+            { id: 9, name: "Kurir", hd: true, cat: "Nacionalni" },
+            { id: 10, name: "Blic TV", hd: true, cat: "Nacionalni" },
+            { id: 11, name: "Una TV", hd: true, cat: "Nacionalni" },
+            { id: 12, name: "K1", hd: true, cat: "Nacionalni" },
+            { id: 13, name: "Tanjug", hd: true, cat: "Nacionalni" },
+            { id: 14, name: "Euronews", hd: true, cat: "Nacionalni" },
+            { id: 15, name: "Newsmax Balkans", hd: true, cat: "Nacionalni" },
+            { id: 16, name: "Bloomberg Adria", hd: true, cat: "Nacionalni" },
+            { id: 18, name: "Vesti", hd: true, cat: "Nacionalni" },
+            { id: 19, name: "Red", hd: true, cat: "Nacionalni" },
+            { id: 20, name: "Informer", hd: true, cat: "Nacionalni" },
+            { id: 21, name: "Narodna", hd: true, cat: "Nacionalni" },
+            { id: 22, name: "Hype", hd: true, cat: "Nacionalni" },
+            { id: 23, name: "Studio B", hd: false, cat: "Regionalni" },
+            { id: 24, name: "KTV Zrenjanin", hd: false, cat: "Regionalni" },
+            { id: 25, name: "RTV Kragujevac", hd: false, cat: "Regionalni" },
+            { id: 26, name: "Belle Amie", hd: false, cat: "Regionalni" },
+            { id: 27, name: "Palma Plus", hd: false, cat: "Regionalni" },
+            { id: 28, name: "RTS 3", hd: true, cat: "Nacionalni" },
+            { id: 29, name: "TV Niš", hd: true, cat: "Regionalni" },
+            { id: 30, name: "RTV Novi Pazar", hd: true, cat: "Regionalni" },
+            { id: 50, name: "Superstar 1 TV", hd: true, cat: "Filmovi" },
+            { id: 51, name: "Superstar 2 TV", hd: true, cat: "Filmovi" },
+            { id: 52, name: "Klasik", hd: true, cat: "Filmovi" },
+            { id: 100, name: "STAR", hd: true, cat: "Filmovi" },
+            { id: 101, name: "STAR Life", hd: true, cat: "Filmovi" },
+            { id: 102, name: "STAR Crime", hd: true, cat: "Filmovi" },
+            { id: 103, name: "STAR Movies", hd: true, cat: "Filmovi" },
+            { id: 106, name: "Diva", hd: false, cat: "Filmovi" },
+            { id: 107, name: "Viasat Kino", hd: true, cat: "Filmovi" },
+            { id: 108, name: "Viasat Epic Drama", hd: true, cat: "Filmovi" },
+            { id: 109, name: "Dizi", hd: true, cat: "Filmovi" },
+            { id: 116, name: "FILMBOX+ Hits", hd: true, cat: "Filmovi" },
+            { id: 117, name: "FILMBOX+ Love & Crime", hd: true, cat: "Filmovi" },
+            { id: 118, name: "FILMBOX+ Emotion", hd: true, cat: "Filmovi" },
+            { id: 119, name: "Superstar 3 TV", hd: true, cat: "Filmovi" },
+            { id: 120, name: "RTS Drama", hd: false, cat: "Filmovi" },
+            { id: 123, name: "Pink Action", hd: true, cat: "Filmovi" },
+            { id: 127, name: "Pink Family", hd: true, cat: "Filmovi" },
+            { id: 129, name: "Pink Movies", hd: false, cat: "Filmovi" },
+            { id: 132, name: "Pink Western", hd: false, cat: "Filmovi" },
+            { id: 134, name: "Pink Film", hd: false, cat: "Filmovi" },
+            { id: 135, name: "Pink Soap", hd: false, cat: "Filmovi" },
+            { id: 136, name: "Pink Serije", hd: false, cat: "Filmovi" },
+            { id: 200, name: "Arena Premium 1", hd: true, cat: "Sport" },
+            { id: 201, name: "Arena Premium 2", hd: true, cat: "Sport" },
+            { id: 202, name: "Arena Premium 3", hd: true, cat: "Sport" },
+            { id: 203, name: "Arena Premium 4", hd: true, cat: "Sport" },
+            { id: 204, name: "Arena Premium 5", hd: true, cat: "Sport" },
+            { id: 210, name: "Arena Sport 1", hd: true, cat: "Sport" },
+            { id: 211, name: "Arena Sport 2", hd: true, cat: "Sport" },
+            { id: 212, name: "Arena Sport 3", hd: true, cat: "Sport" },
+            { id: 213, name: "Arena Sport 4", hd: true, cat: "Sport" },
+            { id: 214, name: "Arena Sport 5", hd: true, cat: "Sport" },
+            { id: 215, name: "Arena Sport 6", hd: true, cat: "Sport" },
+            { id: 216, name: "Arena Sport 7", hd: true, cat: "Sport" },
+            { id: 217, name: "Arena Sport 8", hd: true, cat: "Sport" },
+            { id: 218, name: "Arena Sport 9", hd: true, cat: "Sport" },
+            { id: 219, name: "Arena Sport 10", hd: true, cat: "Sport" },
+            { id: 220, name: "Eurosport 1", hd: true, cat: "Sport" },
+            { id: 221, name: "Eurosport 2", hd: true, cat: "Sport" },
+            { id: 222, name: "Premier League", hd: true, cat: "Sport" },
+            { id: 223, name: "Arena Sport 1x2", hd: true, cat: "Sport" },
+            { id: 224, name: "Arena Adrenalin", hd: true, cat: "Sport" },
+            { id: 225, name: "Arena Tenis", hd: true, cat: "Sport" },
+            { id: 226, name: "Arena Fight", hd: true, cat: "Sport" },
+            { id: 227, name: "Fight Network", hd: true, cat: "Sport" },
+            { id: 228, name: "Arena eSport", hd: true, cat: "Sport" },
+            { id: 229, name: "Kuvo TV", hd: true, cat: "Muzika" },
+            { id: 300, name: "National Geographic", hd: true, cat: "Dokumentarni" },
+            { id: 303, name: "Discovery", hd: true, cat: "Dokumentarni" },
+            { id: 304, name: "ID Extra", hd: true, cat: "Dokumentarni" },
+            { id: 305, name: "Viasat History", hd: true, cat: "Dokumentarni" },
+            { id: 306, name: "Viasat Explore", hd: true, cat: "Dokumentarni" },
+            { id: 307, name: "Viasat Nature", hd: true, cat: "Dokumentarni" },
+            { id: 308, name: "Love Nature", hd: true, cat: "Dokumentarni" },
+            { id: 309, name: "Docubox", hd: true, cat: "Dokumentarni" },
+            { id: 310, name: "Dox TV", hd: true, cat: "Dokumentarni" },
+            { id: 311, name: "Agro TV", hd: true, cat: "Dokumentarni" },
+            { id: 312, name: "RTS Trezor", hd: false, cat: "Dokumentarni" },
+            { id: 313, name: "RTS Nauka", hd: false, cat: "Dokumentarni" },
+            { id: 314, name: "Pink Pedia", hd: false, cat: "Dokumentarni" },
+            { id: 350, name: "24 Kitchen", hd: true, cat: "Zabavni" },
+            { id: 351, name: "Food Network", hd: true, cat: "Zabavni" },
+            { id: 352, name: "TLC", hd: true, cat: "Zabavni" },
+            { id: 353, name: "HGTV", hd: true, cat: "Zabavni" },
+            { id: 354, name: "Travel", hd: true, cat: "Zabavni" },
+            { id: 355, name: "Balkan trip", hd: true, cat: "Zabavni" },
+            { id: 356, name: "Eko vizija", hd: true, cat: "Zabavni" },
+            { id: 357, name: "Museum", hd: true, cat: "Zabavni" },
+            { id: 358, name: "TV DR", hd: true, cat: "Zabavni" },
+            { id: 359, name: "Body In Balance", hd: true, cat: "Zabavni" },
+            { id: 360, name: "My Zen", hd: false, cat: "Zabavni" },
+            { id: 361, name: "RTS Život", hd: false, cat: "Zabavni" },
+            { id: 400, name: "Disney Channel", hd: false, cat: "Dečiji" },
+            { id: 403, name: "Nickelodeon", hd: false, cat: "Dečiji" },
+            { id: 404, name: "Nick Jr.", hd: false, cat: "Dečiji" },
+            { id: 405, name: "Nicktoons", hd: false, cat: "Dečiji" },
+            { id: 406, name: "Cartoonito", hd: true, cat: "Dečiji" },
+            { id: 407, name: "Cartoon Network", hd: true, cat: "Dečiji" },
+            { id: 410, name: "RTS Poletarac", hd: false, cat: "Dečiji" },
+            { id: 411, name: "Dexy TV", hd: true, cat: "Dečiji" },
+            { id: 412, name: "Kazbuka", hd: true, cat: "Dečiji" },
+            { id: 413, name: "Pink Kids", hd: false, cat: "Dečiji" },
+            { id: 414, name: "Pink Super Kids", hd: false, cat: "Dečiji" },
+            { id: 415, name: "Ric", hd: true, cat: "Dečiji" },
+            { id: 501, name: "Toxic X TV", hd: true, cat: "Muzika" },
+            { id: 502, name: "Pink Music", hd: false, cat: "Muzika" },
+            { id: 504, name: "Pink Hits 1", hd: false, cat: "Muzika" },
+            { id: 505, name: "Pink Hits 2", hd: false, cat: "Muzika" },
+            { id: 506, name: "City Play", hd: false, cat: "Muzika" },
+            { id: 507, name: "Pink & Roll", hd: false, cat: "Muzika" },
+            { id: 508, name: "Pink Koncert", hd: false, cat: "Muzika" },
+            { id: 510, name: "Pink Folk", hd: false, cat: "Muzika" },
+            { id: 513, name: "KCN Music 2", hd: false, cat: "Muzika" },
+            { id: 514, name: "RTS Muzika", hd: false, cat: "Muzika" },
+            { id: 515, name: "RTS Kolo", hd: false, cat: "Muzika" },
+            { id: 516, name: "RTS Klasika", hd: false, cat: "Muzika" },
+            { id: 603, name: "CNN", hd: true, cat: "Vesti" },
+            { id: 604, name: "BBC News", hd: false, cat: "Vesti" },
+            { id: 605, name: "RT News", hd: true, cat: "Vesti" },
+            { id: 606, name: "RT Doc", hd: true, cat: "Dokumentarni" },
+            { id: 650, name: "BN TV", hd: true, cat: "Regionalni" },
+            { id: 710, name: "KCN 1", hd: false, cat: "Regionalni" },
+            { id: 711, name: "KCN Svet+ 3", hd: false, cat: "Regionalni" },
+            { id: 714, name: "HA HA", hd: false, cat: "Zabavni" },
+            { id: 715, name: "LOL", hd: false, cat: "Zabavni" },
+            { id: 800, name: "Radio Beograd 1", hd: false, cat: "Radio" },
+            { id: 801, name: "Radio Beograd 2", hd: false, cat: "Radio" },
+            { id: 802, name: "Radio 202", hd: false, cat: "Radio" },
+            { id: 803, name: "Radio S1", hd: false, cat: "Radio" },
+            { id: 804, name: "Radio S2", hd: false, cat: "Radio" },
+            { id: 805, name: "Radio S3", hd: false, cat: "Radio" },
+            { id: 806, name: "Radio S4", hd: false, cat: "Radio" },
+            { id: 807, name: "Naxi Radio", hd: false, cat: "Radio" },
+            { id: 808, name: "Radio Nostalgie", hd: false, cat: "Radio" },
+            { id: 809, name: "Radio Top FM", hd: false, cat: "Radio" },
+            { id: 810, name: "Radio Naxi Kids", hd: false, cat: "Radio" },
+            { id: 811, name: "TDI Radio", hd: false, cat: "Radio" },
+            { id: 812, name: "HIT Radio", hd: false, cat: "Radio" },
+            { id: 813, name: "Radio Jat", hd: false, cat: "Radio" },
+            { id: 814, name: "Radio Karolina", hd: false, cat: "Radio" },
+            { id: 815, name: "Radio Lola", hd: false, cat: "Radio" },
+            { id: 816, name: "Radio AS", hd: false, cat: "Radio" },
+            { id: 817, name: "Play Radio", hd: false, cat: "Radio" },
+            { id: 818, name: "WTF Radio", hd: false, cat: "Radio" },
+            { id: 999, name: "Info Kanal", hd: false, cat: "Nacionalni" }
+        ];
+
+        let selectedCategory = "Sve";
+        let favorites = JSON.parse(localStorage.getItem('fav_channels')) || [];
+        let scrollTimeout = null;
+        let isDragging = false;
+        let startY = 0;
+        let startScrollTop = 0;
+        let scrollAnimationId = null;
+        let targetScrollTop = 0;
+        let isWheelAnimating = false;
+
+        const categories = ["Sve", "Nacionalni", "Sport", "Filmovi", "Dokumentarni", "Zabavni", "Dečiji", "Muzika", "Vesti", "Regionalni", "Radio"];
+
+        let scrollContainer;
+        let customScrollbarTrack;
+        let customScrollbarThumb;
+        let searchInput;
+        let backupModal;
+        let settingsBtn;
+        let modalCloseBtn;
+        let exportBtn;
+        let importBtn;
+        let modalFeedback;
+        const categoriesContainer = document.getElementById('categoriesContainer');
+        const channelsGrid = document.getElementById('channelsGrid');
+        const favFilter = document.getElementById('favFilter');
+        const hdFilter = document.getElementById('hdFilter');
+        const themeBtn = document.getElementById('themeBtn');
+        const backToTopBtn = document.getElementById('backToTopBtn');
+
+        window.onload = function() {
+            scrollContainer = document.getElementById('scrollContainer');
+            customScrollbarTrack = document.getElementById('customScrollbarTrack');
+            customScrollbarThumb = document.getElementById('customScrollbarThumb');
+            searchInput = document.getElementById('searchInput');
+            backupModal = document.getElementById('backupModal');
+            settingsBtn = document.getElementById('settingsBtn');
+            modalCloseBtn = document.getElementById('modalCloseBtn');
+            exportBtn = document.getElementById('exportBtn');
+            importBtn = document.getElementById('importBtn');
+            modalFeedback = document.getElementById('modalFeedback');
+
+            loadTheme();
+            renderCategories();
+            renderChannels(channelsData);
+            updateScrollbarDimension();
+            
+            if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+            if (searchInput) searchInput.addEventListener('input', filterChannels);
+            if (favFilter) favFilter.addEventListener('change', filterChannels);
+            if (hdFilter) hdFilter.addEventListener('change', filterChannels);
+            if (scrollContainer) scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+            if (backToTopBtn) backToTopBtn.addEventListener('click', scrollToTop);
+            window.addEventListener('resize', updateScrollbarDimension);
+            
+            if (customScrollbarTrack) {
+                customScrollbarTrack.addEventListener('mousedown', initiateDrag);
+                customScrollbarTrack.addEventListener('wheel', handleTrackWheel, { passive: false });
+            }
+
+            if (settingsBtn) settingsBtn.addEventListener('click', openModal);
+            if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
+            if (backupModal) backupModal.addEventListener('click', handleModalOverlayClick);
+            if (exportBtn) exportBtn.addEventListener('click', handleExport);
+            if (importBtn) importBtn.addEventListener('click', handleImport);
+            window.addEventListener('keydown', handleGlobalKeydown);
+        };
+
+        function renderCategories() {
+            categoriesContainer.innerHTML = categories.map(cat => `
+                <button class="category-btn ${cat === selectedCategory ? 'active' : ''}" 
+                        onclick="setCategory('${cat}', this)">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(cat, element) {
+            selectedCategory = cat;
+            const previousActive = categoriesContainer.querySelector('.category-btn.active');
+            if (previousActive) {
+                previousActive.classList.remove('active');
+            }
+            if (element) {
+                element.classList.add('active');
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    inline: 'center',
+                    block: 'nearest'
+                });
+            }
+            filterChannels();
+        }
+
+        function renderChannels(channels) {
+            if (channels.length === 0) {
+                channelsGrid.innerHTML = `<div class="no-results">Nema pronađenih kanala po zadatom kriterijumu.</div>`;
+                updateScrollbarDimension();
+                return;
+            }
+
+            channelsGrid.innerHTML = channels.map(channel => {
+                const isFav = favorites.includes(channel.id);
+                return `
+                    <div class="channel-card" data-id="${channel.id}">
+                        <div>
+                            <div class="channel-number">${channel.id}</div>
+                            <div class="channel-name">${channel.name}</div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="badges">
+                                ${channel.hd ? '<span class="badge-hd">HD</span>' : ''}
+                                <span class="badge-type">${channel.cat}</span>
+                            </div>
+                            <button class="fav-btn ${isFav ? 'active' : ''}" 
+                                    onclick="toggleFavorite(${channel.id}, this)" 
+                                    aria-label="Omiljeni kanal">
+                                ${isFav ? '★' : '☆'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateScrollbarDimension();
+        }
+
+        function filterChannels() {
+            const searchVal = searchInput.value.toLowerCase().trim();
+            const onlyFavs = favFilter.checked;
+            const onlyHD = hdFilter.checked;
+
+            const filtered = channelsData.filter(ch => {
+                const matchesSearch = ch.name.toLowerCase().includes(searchVal) || ch.id.toString() === searchVal;
+                const matchesCategory = selectedCategory === "Sve" || ch.cat === selectedCategory;
+                const matchesFav = !onlyFavs || favorites.includes(ch.id);
+                const matchesHD = !onlyHD || ch.hd;
+
+                return matchesSearch && matchesCategory && matchesFav && matchesHD;
+            });
+
+            renderChannels(filtered);
+            scrollContainer.scrollTop = 0;
+        }
+
+        function toggleFavorite(id, btn) {
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(favId => favId !== id);
+                btn.classList.remove('active');
+                btn.innerHTML = '☆';
+            } else {
+                favorites.push(id);
+                btn.classList.add('active');
+                btn.innerHTML = '★';
+            }
+            localStorage.setItem('fav_channels', JSON.stringify(favorites));
+            
+            if (favFilter.checked) {
+                filterChannels();
+            }
+        }
+
+        function handleScroll() {
+            const scrollTop = scrollContainer.scrollTop;
+            const scrollHeight = scrollContainer.scrollHeight;
+            const clientHeight = scrollContainer.clientHeight;
+
+            if (scrollHeight > clientHeight) {
+                const percentage = scrollTop / (scrollHeight - clientHeight);
+                const trackHeight = scrollContainer.offsetHeight;
+                const thumbHeight = customScrollbarThumb.offsetHeight;
+                const maxThumbTop = trackHeight - thumbHeight;
+                
+                customScrollbarThumb.style.top = (percentage * maxThumbTop) + 'px';
+                
+                customScrollbarThumb.classList.add('visible');
+                
+                if (!isDragging) {
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        if (!isDragging) {
+                            customScrollbarThumb.classList.remove('visible');
+                        }
+                    }, 500);
+                }
+            }
+
+            if (scrollTop > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        }
+
+        function updateScrollbarDimension() {
+            const scrollHeight = scrollContainer.scrollHeight;
+            const clientHeight = scrollContainer.clientHeight;
+            
+            if (scrollHeight > clientHeight) {
+                const ratio = clientHeight / scrollHeight;
+                const thumbHeight = Math.max(ratio * clientHeight, 40);
+                customScrollbarThumb.style.height = thumbHeight + 'px';
+            } else {
+                customScrollbarThumb.style.height = '0px';
+            }
+        }
+
+        function scrollToTop() {
+            scrollContainer.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            let newTheme = 'dark';
+            
+            if (currentTheme === 'dark' || !currentTheme) {
+                newTheme = 'light';
+            }
+
+            setTheme(newTheme);
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            setTheme(savedTheme);
+        }
+function initiateDrag(e) {
+            isWheelAnimating = false;
+            const trackRect = customScrollbarTrack.getBoundingClientRect();
+            const trackHeight = customScrollbarTrack.offsetHeight;
+            const thumbHeight = customScrollbarThumb.offsetHeight;
+            let targetScroll = scrollContainer.scrollTop;
+            
+            if (e.target === customScrollbarTrack) {
+                const clickY = e.clientY - trackRect.top;
+                const clickPercentage = (clickY - thumbHeight / 2) / (trackHeight - thumbHeight);
+                const clampedPercentage = Math.max(0, Math.min(1, clickPercentage));
+                const scrollHeight = scrollContainer.scrollHeight;
+                const clientHeight = scrollContainer.clientHeight;
+                targetScroll = clampedPercentage * (scrollHeight - clientHeight);
+                animateScrollTo(scrollContainer, targetScroll, 180);
+            }
+            
+            isDragging = true;
+            startY = e.pageY;
+            startScrollTop = targetScroll;
+            customScrollbarThumb.classList.add('dragging');
+            customScrollbarThumb.classList.add('visible');
+            document.body.style.userSelect = 'none';
+            
+            window.addEventListener('mousemove', handleDrag);
+            window.addEventListener('mouseup', terminateDrag);
+        }
+
+        function handleDrag(e) {
+            if (!isDragging) return;
+            if (scrollAnimationId) {
+                cancelAnimationFrame(scrollAnimationId);
+                scrollAnimationId = null;
+            }
+            const deltaY = e.pageY - startY;
+            const clientHeight = scrollContainer.clientHeight;
+            const scrollHeight = scrollContainer.scrollHeight;
+            const trackHeight = scrollContainer.offsetHeight;
+            const thumbHeight = customScrollbarThumb.offsetHeight;
+            
+            const scrollableRatio = (scrollHeight - clientHeight) / (trackHeight - thumbHeight);
+            scrollContainer.scrollTop = startScrollTop + (deltaY * scrollableRatio);
+        }
+
+        function terminateDrag() {
+            if (isDragging) {
+                isDragging = false;
+                customScrollbarThumb.classList.remove('dragging');
+                customScrollbarThumb.classList.remove('visible');
+                document.body.style.userSelect = '';
+                
+                window.removeEventListener('mousemove', handleDrag);
+                window.removeEventListener('mouseup', terminateDrag);
+            }
+        }
+
+        function handleTrackWheel(e) {
+            e.preventDefault();
+            if (!isWheelAnimating) {
+                targetScrollTop = scrollContainer.scrollTop;
+            }
+            targetScrollTop += e.deltaY;
+            targetScrollTop = Math.max(0, Math.min(scrollContainer.scrollHeight - scrollContainer.clientHeight, targetScrollTop));
+            
+            if (!isWheelAnimating) {
+                isWheelAnimating = true;
+                animateWheelScroll();
+            }
+        }
+
+        function animateWheelScroll() {
+            if (!isWheelAnimating) return;
+            const current = scrollContainer.scrollTop;
+            const diff = targetScrollTop - current;
+            const step = diff * 0.15;
+            
+            if (Math.abs(step) < 0.5) {
+                scrollContainer.scrollTop = targetScrollTop;
+                isWheelAnimating = false;
+            } else {
+                scrollContainer.scrollTop = current + step;
+                requestAnimationFrame(animateWheelScroll);
+            }
+        }
+
+        function animateScrollTo(element, target, duration) {
+            if (scrollAnimationId) {
+                cancelAnimationFrame(scrollAnimationId);
+            }
+            const start = element.scrollTop;
+            const change = target - start;
+            const startTime = performance.now();
+
+            function easeOutQuad(t) {
+                return t * (2 - t);
+            }
+
+            function updateScroll(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                element.scrollTop = start + change * easeOutQuad(progress);
+
+                if (progress < 1) {
+                    scrollAnimationId = requestAnimationFrame(updateScroll);
+                } else {
+                    scrollAnimationId = null;
+                }
+            }
+
+            scrollAnimationId = requestAnimationFrame(updateScroll);
+        }
+function openModal() {
+            backupModal.classList.add('active');
+            showFeedback('Sačuvajte svoje omiljene kanale u fajl na uređaju ili ih vratite iz već sačuvane kopije.', 'info');
+        }
+
+        function closeModal() {
+            backupModal.classList.remove('active');
+        }
+
+        function handleModalOverlayClick(e) {
+            if (e.target === backupModal) {
+                closeModal();
+            }
+        }
+
+        function handleGlobalKeydown(e) {
+            if (e.key === 'Escape' && backupModal.classList.contains('active')) {
+                closeModal();
+            }
+        }
+
+        function showFeedback(message, type) {
+            modalFeedback.innerHTML = message;
+            modalFeedback.className = 'modal-feedback ' + type;
+        }
+
+        function handleExport() {
+            modalFeedback.innerHTML = '';
+            if (favorites.length === 0) {
+                showFeedback('Nema omiljenih kanala za izvoz.', 'error');
+                return;
+            }
+            try {
+                const exportData = favorites.join(',');
+                const blob = new Blob([exportData], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'a1_xploretv_backup.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showFeedback('Kopija je uspešno sačuvana u fajl.', 'success');
+            } catch (err) {
+                showFeedback('Greška prilikom izvoza fajla.', 'error');
+            }
+        }
+
+        function handleImport() {
+            modalFeedback.innerHTML = '';
+            try {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.txt';
+                fileInput.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        const content = evt.target.result.trim();
+                        const validationPattern = /^[0-9,]+$/;
+                        if (!validationPattern.test(content)) {
+                            showFeedback('Greška: Fajl sadrži neispravan format.', 'error');
+                            return;
+                        }
+                        const parsedIds = content.split(',')
+                            .map(item => parseInt(item.trim(), 10))
+                            .filter(item => !isNaN(item));
+
+                        if (parsedIds.length === 0) {
+                            showFeedback('Greška: Prazna datoteka.', 'error');
+                            return;
+                        }
+                        const validIds = parsedIds.filter(id => channelsData.some(ch => ch.id === id));
+                        if (validIds.length === 0) {
+                            showFeedback('Greška: Kanali iz fajla ne postoje.', 'error');
+                            return;
+                        }
+                        favorites = validIds;
+                        localStorage.setItem('fav_channels', JSON.stringify(favorites));
+                        filterChannels();
+                        showFeedback('Uspešno uvezeno ' + validIds.length + ' kanala.', 'success');
+                    };
+                    reader.readAsText(file);
+                };
+                fileInput.click();
+            } catch (err) {
+                showFeedback('Greška prilikom uvoza fajla.', 'error');
+            }
+        }
+    </script>
+<div id="backupModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Rezervna kopija</h2>
+                <button class="modal-close" id="modalCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-actions">
+                    <button class="modal-btn" id="exportBtn">Izvezi kopiju</button>
+                    <button class="modal-btn" id="importBtn">Uvezi kopiju</button>
+                </div>
+                <div id="modalFeedback" class="modal-feedback"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
