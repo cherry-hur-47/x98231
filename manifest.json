@@ -1,0 +1,21 @@
+{
+  "id": "com.porodica.a1tv",
+  "name": "A1 Xplore TV",
+  "short_name": "A1 TV",
+  "description": "TV i Radio Vodic",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#E2001A",
+  "orientation": "portrait",
+  "lang": "sr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
